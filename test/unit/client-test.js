@@ -2,7 +2,7 @@
 
 const Client = require('../../').Client;
 const Light = require('../../').Light;
-const packet = require('../../').packet;
+const Packet = require('../../').Packet;
 const constants = require('../../').constants;
 const assert = require('chai').assert;
 const lolex = require('lolex');
@@ -338,17 +338,17 @@ describe('Client', () => {
     }, () => {
       assert.equal(client.sequenceNumber, 0, 'starts sequence with 0');
       assert.lengthOf(client.getMessageQueue(), 0, 'is empty');
-      client.send(packet.create('getService', {}, '12345678'));
+      client.send(Packet.create('getService', {}, '12345678'));
       assert.equal(client.sequenceNumber, 0, 'sequence is the same after broadcast');
       assert.lengthOf(client.getMessageQueue(), 1, 'added to message queue');
       assert.property(client.getMessageQueue()[0], 'data', 'has data');
       assert.notProperty(client.getMessageQueue()[0], 'address', 'broadcast has no target address');
 
-      client.send(packet.create('setPower', {level: 65535, duration: 0, target: lightProps.id}, '12345678'));
+      client.send(Packet.create('setPower', {level: 65535, duration: 0, target: lightProps.id}, '12345678'));
       assert.equal(client.sequenceNumber, 1, 'sequence increased after specific targeting');
 
       client.sequenceNumber = constants.PACKET_HEADER_SEQUENCE_MAX;
-      client.send(packet.create('setPower', {level: 65535, duration: 0, target: lightProps.id}, '12345678'));
+      client.send(Packet.create('setPower', {level: 65535, duration: 0, target: lightProps.id}, '12345678'));
       assert.equal(client.sequenceNumber, 0, 'sequence starts over after maximum');
       done();
     });
@@ -563,7 +563,7 @@ describe('Client', () => {
         }
         done();
       };
-      const packetObj = packet.create('setPower', {level: 65535}, client.source);
+      const packetObj = Packet.create('setPower', {level: 65535}, client.source);
       const queueAddress = client.broadcastAddress;
 
       client.init({
@@ -593,7 +593,7 @@ describe('Client', () => {
         }
         done();
       };
-      const packetObj = packet.create('setPower', {level: 65535}, client.source);
+      const packetObj = Packet.create('setPower', {level: 65535}, client.source);
       const queueAddress = client.broadcastAddress;
 
       client.init({
@@ -626,7 +626,7 @@ describe('Client', () => {
         assert.isNull(rinfo);
         done();
       };
-      const packetObj = packet.create('setPower', {level: 65535}, client.source);
+      const packetObj = Packet.create('setPower', {level: 65535}, client.source);
       const queueAddress = client.broadcastAddress;
 
       client.init({
