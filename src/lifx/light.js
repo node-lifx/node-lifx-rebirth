@@ -321,11 +321,13 @@ Light.prototype.getFirmwareVersion = function(callback) {
       return callback(err, null);
     }
     callback(null, pick(msg, [
+      'build',
       'majorVersion',
       'minorVersion'
     ]));
   }, sqnNumber);
 };
+Light.prototype.getHostFirmware = Light.prototype.getFirmwareVersion;
 
 /**
  * Requests infos from the microcontroller unit of the light
@@ -344,10 +346,12 @@ Light.prototype.getFirmwareInfo = function(callback) {
     callback(null, pick(msg, [
       'signal',
       'tx',
-      'rx'
+      'rx',
+      'mcuTemperature'
     ]));
   }, sqnNumber);
 };
+Light.prototype.getHostInfo = Light.prototype.getFirmwareInfo;
 
 /**
  * Requests wifi infos from for the light
@@ -366,7 +370,8 @@ Light.prototype.getWifiInfo = function(callback) {
     callback(null, pick(msg, [
       'signal',
       'tx',
-      'rx'
+      'rx',
+      'mcuTemperature'
     ]));
   }, sqnNumber);
 };
@@ -376,7 +381,7 @@ Light.prototype.getWifiInfo = function(callback) {
  * @param {Function} callback a function to accept the data
  */
 Light.prototype.getWifiVersion = function(callback) {
-  validate.callback(callback, 'light getWifiVersion method');
+  validate.callback(callback, 'light getWifiFirmware method');
 
   const packetObj = packet.create('getWifiFirmware', {}, this.client.source);
   packetObj.target = this.id;
@@ -386,11 +391,13 @@ Light.prototype.getWifiVersion = function(callback) {
       return callback(err, null);
     }
     return callback(null, pick(msg, [
+      'build',
       'majorVersion',
       'minorVersion'
     ]));
   }, sqnNumber);
 };
+Light.prototype.getWifiFirmware = Light.prototype.getWifiVersion;
 
 /**
  * Requests the label of the light
@@ -442,6 +449,62 @@ Light.prototype.setLabel = function(label, callback) {
   const packetObj = packet.create('setLabel', {label: label}, this.client.source);
   packetObj.target = this.id;
   this.client.send(packetObj, callback);
+};
+
+/**
+ * Requests the location of the light
+ * @param {Function} callback a function to accept the data
+ * @param {Boolean} [cache=false] return cached result if existent
+ * @return {Function} callback(err, location)
+ */
+Light.prototype.getLocation = function(callback, cache) {
+  validate.callback(callback, 'light getLocation method');
+
+  if (cache !== undefined && typeof cache !== 'boolean') {
+    throw new TypeError('LIFX light getLocation method expects cache to be a boolean');
+  }
+  const packetObj = packet.create('getLocation', {
+    target: this.id
+  }, this.client.source);
+  const sqnNumber = this.client.send(packetObj);
+  this.client.addMessageHandler('stateLocation', function(err, msg) {
+    if (err) {
+      return callback(err, null);
+    }
+    return callback(null, pick(msg, [
+      'location',
+      'label',
+      'updatedAt'
+    ]));
+  }, sqnNumber);
+};
+
+/**
+ * Requests the group of the light
+ * @param {Function} callback a function to accept the data
+ * @param {Boolean} [cache=false] return cached result if existent
+ * @return {Function} callback(err, group)
+ */
+Light.prototype.getGroup = function(callback, cache) {
+  validate.callback(callback, 'light getGroup method');
+
+  if (cache !== undefined && typeof cache !== 'boolean') {
+    throw new TypeError('LIFX light getGroup method expects cache to be a boolean');
+  }
+  const packetObj = packet.create('getGroup', {
+    target: this.id
+  }, this.client.source);
+  const sqnNumber = this.client.send(packetObj);
+  this.client.addMessageHandler('stateGroup', function(err, msg) {
+    if (err) {
+      return callback(err, null);
+    }
+    return callback(null, pick(msg, [
+      'group',
+      'label',
+      'updatedAt'
+    ]));
+  }, sqnNumber);
 };
 
 /**

@@ -1,4 +1,5 @@
 'use strict';
+const readline = require('readline');
 
 const LifxClient = require('../src/lifx').Client;
 const client = new LifxClient();
@@ -53,14 +54,27 @@ console.log('Press 6 to turn the lights a bright bluish white');
 console.log('Press 7 to turn the lights a bright reddish white');
 console.log('Press 8 to show debug messages including network traffic');
 console.log('Press 9 to hide debug messages including network traffic');
+console.log('Press hf run getHostFirmware');
+console.log('Press wf run getWifiFirmware');
+console.log('Press hi run getHostFirmware');
+console.log('Press wi run getWifiFirmware');
+console.log('Press gl run getLocation');
+console.log('Press gg run getGroup');
+console.log('Press gs run getState');
+console.log('Press dc run getDeviceChain');
 console.log('Press u to request uptime from all lights');
 console.log('Press r to reboot all lights');
 console.log('Press 0 to exit\n');
 
-process.stdin.setEncoding('utf8');
-process.stdin.setRawMode(true);
+const lineReader = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  prompt: 'lifx> '
+});
 
-process.stdin.on('data', function(key) {
+lineReader.prompt();
+
+lineReader.on('line', (key) => {
   if (key === '1') {
     client.lights().forEach(function(light) {
       light.on(0, function(err) {
@@ -130,6 +144,54 @@ process.stdin.on('data', function(key) {
   } else if (key === '9') {
     client.setDebug(false);
     console.log('Debug messages are hidden');
+  } else if (key === 'hf') {
+    client.lights().forEach(function(light) {
+      light.getHostFirmware((err, msg) => {
+        console.log('StateHostFirmware:', light.id, ':',  msg);
+      })
+    });
+  } else if (key === 'wf') {
+    client.lights().forEach(function(light) {
+      light.getWifiFirmware((err, msg) => {
+        console.log('StateWifiFirmware:', light.id, ':',  msg);
+      })
+    });
+  } else if (key === 'hi') {
+    client.lights().forEach(function(light) {
+      light.getHostInfo((err, msg) => {
+        console.log('StateHostInfo:', light.id, ':',  msg);
+      })
+    });
+  } else if (key === 'wi') {
+    client.lights().forEach(function(light) {
+      light.getWifiInfo((err, msg) => {
+        console.log('StateWifiInfo:', light.id, ':',  msg);
+      })
+    });
+  } else if (key === 'gl') {
+    client.lights().forEach(function(light) {
+      light.getLocation((err, msg) => {
+        console.log('StateLocation:', light.id, ':',  msg);
+      })
+    });
+  } else if (key === 'gg') {
+    client.lights().forEach(function(light) {
+      light.getGroup((err, msg) => {
+        console.log('StateGroup:', light.id, ':',  msg);
+      })
+    });
+  } else if (key === 'gs') {
+    client.lights().forEach(function(light) {
+      light.getState((err, msg) => {
+        console.log('State:', light.id, ':',  msg);
+      })
+    });
+  } else if (key === 'dc') {
+    client.lights().forEach(function(light) {
+      light.getDeviceChain((err, msg) => {
+        console.log('StateDeviceChain:', light.id, ':',  JSON.stringify(msg, null, 2));
+      })
+    });
   } else if (key === 'u') {
     client.lights().forEach(function(light) {
       light.getUptime(function(err, uptime) {
@@ -151,4 +213,5 @@ process.stdin.on('data', function(key) {
     client.destroy();
     process.exit(); // eslint-disable-line no-process-exit
   }
+  lineReader.prompt();
 });
